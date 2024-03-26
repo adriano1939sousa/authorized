@@ -1,6 +1,7 @@
 package br.com.adrianosousa.authorized.notification;
 
 import br.com.adrianosousa.authorized.transaction.Transaction;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -15,8 +16,13 @@ public class NotificationConsumer {
                 .build();
     }
 
-   // @KafkaListener
+    @KafkaListener(topics = "transaction-notification", groupId = "authotized")
     public void receiveNotification (Transaction transaction){
-
+        var response = restClient.get()
+                .retrieve()
+                .toEntity(Notification.class);
+        if (response.getStatusCode().isError() || !response.getBody().message()){
+            throw new NotificationException("Error sendind notification!");
+        }
     }
 }
