@@ -5,6 +5,8 @@ import br.com.adrianosousa.authorized.notification.NotificationService;
 import br.com.adrianosousa.authorized.wallet.Wallet;
 import br.com.adrianosousa.authorized.wallet.WalletRepository;
 import br.com.adrianosousa.authorized.wallet.WalletType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,17 +14,18 @@ import java.util.List;
 
 @Service
 public class TransactionService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransactionService.class);
     private final TransactionRepository transactionRepository;
     private final WalletRepository walletRepository;
     private final AuthorizationService authorizationService;
     private final NotificationService notificationService;
 
     public TransactionService(TransactionRepository transactionRepository, WalletRepository walletRepository
-            ,AuthorizationService authorizationService,NotificationService notificationService) {
+            , AuthorizationService authorizationService, NotificationService notificationService) {
         this.transactionRepository = transactionRepository;
         this.walletRepository = walletRepository;
         this.authorizationService = authorizationService;
-        this.notificationService=notificationService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -56,6 +59,8 @@ public class TransactionService {
      * 3 - payer is not the payer
      */
     private void validate(Transaction transaction) {
+        LOGGER.info("validating transaction {}...", transaction);
+
         walletRepository.findById(transaction.payee())
                 .map(payee -> walletRepository.findById(transaction.payer())
                         .map(payer -> isTransactionValid(transaction, payer) ? true : null)
